@@ -5,19 +5,26 @@ import CreateCollection from '../CreateCollection';
 import ImportCollection from 'components/Sidebar/ImportCollection';
 import ImportCollectionLocation from 'components/Sidebar/ImportCollectionLocation';
 
-import { IconDots } from '@tabler/icons';
+import { IconDots, IconLogout } from '@tabler/icons';
 import { useState, forwardRef, useRef } from 'react';
-import { useDispatch } from 'react-redux';
-import { showHomePage } from 'providers/ReduxStore/slices/app';
+import { useDispatch, useSelector } from 'react-redux';
+import { saveUser, showHomePage } from 'providers/ReduxStore/slices/app';
 import { openCollection, importCollection } from 'providers/ReduxStore/slices/collections/actions';
 import StyledWrapper from './StyledWrapper';
+import Login from '../Login/index';
 
 const TitleBar = () => {
   const [importedCollection, setImportedCollection] = useState(null);
   const [createCollectionModalOpen, setCreateCollectionModalOpen] = useState(false);
   const [importCollectionModalOpen, setImportCollectionModalOpen] = useState(false);
   const [importCollectionLocationModalOpen, setImportCollectionLocationModalOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const user = useSelector((state) => state.app.user);
   const dispatch = useDispatch();
+
+  const onLogout = () => {
+    dispatch(saveUser(null));
+  };
   const { ipcRenderer } = window;
 
   const handleImportCollection = (collection) => {
@@ -68,6 +75,29 @@ const TitleBar = () => {
           handleSubmit={handleImportCollectionLocation}
         />
       ) : null}
+      {loginOpen ? <Login onClose={() => setLoginOpen(false)} /> : null}
+      {user ? (
+        <div className="flex items-center mb-5">
+          <div className="flex items-center cursor-pointer">
+            <img src={user.avatar} alt="Avatar" style={{ width: '50px', height: '50px', borderRadius: '50%' }} />
+          </div>
+          <div
+            className="flex items-center font-medium select-none cursor-pointer"
+            style={{ fontSize: 14, paddingLeft: 6, position: 'relative', top: -1 }}
+          >
+            {user.name}
+          </div>
+          <div className="collection-dropdown flex flex-grow items-center justify-end">
+            <IconLogout className="cursor-pointer" onClick={onLogout} />
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center mb-5">
+          <button onClick={() => setLoginOpen(true)} className="btn btn-sm btn-secondary w-full">
+            Login
+          </button>
+        </div>
+      )}
 
       <div className="flex items-center">
         <div className="flex items-center cursor-pointer" onClick={handleTitleClick}>

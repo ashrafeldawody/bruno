@@ -10,6 +10,10 @@ const initialState = {
   showHomePage: false,
   showPreferences: false,
   isEnvironmentSettingsModalOpen: false,
+  user: {
+    username: null,
+    avatarUrl: null
+  },
   preferences: {
     request: {
       sslVerification: true,
@@ -72,6 +76,10 @@ export const appSlice = createSlice({
     },
     removeAllTasksFromQueue: (state) => {
       state.taskQueue = [];
+    },
+    updateUser: (state, action) => {
+      console.log('action.payload', action.payload);
+      state.user = action.payload;
     }
   }
 });
@@ -89,7 +97,8 @@ export const {
   updateCookies,
   insertTaskIntoQueue,
   removeTaskFromQueue,
-  removeAllTasksFromQueue
+  removeAllTasksFromQueue,
+  updateUser
 } = appSlice.actions;
 
 export const savePreferences = (preferences) => (dispatch, getState) => {
@@ -103,6 +112,23 @@ export const savePreferences = (preferences) => (dispatch, getState) => {
       .then(resolve)
       .catch((err) => {
         toast.error('An error occurred while saving preferences');
+        console.error(err);
+        reject(err);
+      });
+  });
+};
+
+export const saveUser = (user) => (dispatch, getState) => {
+  return new Promise((resolve, reject) => {
+    const { ipcRenderer } = window;
+
+    ipcRenderer
+      .invoke('renderer:save-user', user)
+      .then(() => toast.success('Logged in successfully'))
+      .then(() => dispatch(updateUser(user)))
+      .then(resolve)
+      .catch((err) => {
+        toast.error('An error occurred while saving user');
         console.error(err);
         reject(err);
       });

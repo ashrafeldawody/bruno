@@ -1,5 +1,11 @@
 import { useEffect } from 'react';
-import { showPreferences, updateCookies, updatePreferences } from 'providers/ReduxStore/slices/app';
+import {
+  saveUser,
+  showPreferences,
+  updateCookies,
+  updatePreferences,
+  updateUser
+} from 'providers/ReduxStore/slices/app';
 import {
   brunoConfigUpdateEvent,
   collectionAddDirectoryEvent,
@@ -81,6 +87,8 @@ const useIpcEvents = () => {
 
     ipcRenderer.invoke('renderer:ready');
 
+    ipcRenderer.invoke('renderer:load-user');
+
     const removeCollectionTreeUpdateListener = ipcRenderer.on('main:collection-tree-updated', _collectionTreeUpdated);
 
     const removeOpenCollectionListener = ipcRenderer.on('main:collection-opened', (pathname, uid, brunoConfig) => {
@@ -140,6 +148,10 @@ const useIpcEvents = () => {
       dispatch(updateCookies(val));
     });
 
+    const removeUserUpdatesListener = ipcRenderer.on('main:load-user', (val) => {
+      dispatch(updateUser(val));
+    });
+
     return () => {
       removeCollectionTreeUpdateListener();
       removeOpenCollectionListener();
@@ -155,6 +167,7 @@ const useIpcEvents = () => {
       removeShowPreferencesListener();
       removePreferencesUpdatesListener();
       removeCookieUpdateListener();
+      removeUserUpdatesListener();
     };
   }, [isElectron]);
 };
